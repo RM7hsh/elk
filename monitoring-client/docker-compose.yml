@@ -1,0 +1,35 @@
+services:
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:9.5.4
+    container_name: filebeat-client
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+    restart: unless-stopped
+    command: ["filebeat", "-e", "--strict.perms=false"]
+
+
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: devops
+      POSTGRES_PASSWORD: SecretPassword123!
+      POSTGRES_DB: app_test
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  mysql-db:
+    image: percona/percona-server:8.4
+    container_name: mysql-db
+    environment:
+      PERCONA_PASSWORD: "RootPassword123!"
+      MYSQL_ROOT_PASSWORD: "RootPassword123!"
+      MYSQL_DATABASE: "analitics_test"
+    ports:
+      - "3306:3306"
+    restart: unless-stopped

@@ -1,0 +1,33 @@
+filebeat.inputs:
+  # 1. Сбор логов Docker-контейнеров (Postgres, MySQL и т.д.)
+  - type: filestream
+    id: docker-container-logs
+    enabled: true
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    parsers:
+      - container:
+          stream: all
+    prospector.scanner.symlinks: true
+
+  # 2. Системные логи хоста
+  - type: filestream
+    id: system-host-logs
+    enabled: true
+    paths:
+      - /var/log/*.log
+      - /var/log/syslog
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+  - add_host_metadata:
+      netinfo.enabled: false
+  - add_fields:
+      target: env
+      fields:
+        name: "develop"
+        role: "database-node"
+
+output.logstash:
+  hosts: ["testzabbixproxy.pandora.develop:5044"]
